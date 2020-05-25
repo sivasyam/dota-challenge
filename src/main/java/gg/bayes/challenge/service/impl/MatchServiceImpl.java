@@ -3,7 +3,6 @@ package gg.bayes.challenge.service.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -38,12 +37,14 @@ import lombok.extern.slf4j.Slf4j;
 import static gg.bayes.challenge.utils.Constants.ABILITY;
 import static gg.bayes.challenge.utils.Constants.ARROW;
 import static gg.bayes.challenge.utils.Constants.BUYS;
+import static gg.bayes.challenge.utils.Constants.BY_NPC_DOTA;
 import static gg.bayes.challenge.utils.Constants.BY_NPC_DOTA_HERO;
 import static gg.bayes.challenge.utils.Constants.CASTS;
 import static gg.bayes.challenge.utils.Constants.CLOSE_BRACKET;
 import static gg.bayes.challenge.utils.Constants.CLOSE_SQ_BRACKET;
 import static gg.bayes.challenge.utils.Constants.DAMAGE;
 import static gg.bayes.challenge.utils.Constants.FOR;
+import static gg.bayes.challenge.utils.Constants.HERO;
 import static gg.bayes.challenge.utils.Constants.HITS;
 import static gg.bayes.challenge.utils.Constants.HITS_NPC_DOTA_HERO;
 import static gg.bayes.challenge.utils.Constants.IS;
@@ -51,7 +52,8 @@ import static gg.bayes.challenge.utils.Constants.ITEM;
 import static gg.bayes.challenge.utils.Constants.LEVEL;
 import static gg.bayes.challenge.utils.Constants.NPC_DOTA;
 import static gg.bayes.challenge.utils.Constants.NPC_DOTA_HERO;
-import static gg.bayes.challenge.utils.Constants.ON;
+import static gg.bayes.challenge.utils.Constants.ON_NPC_DOTA;
+import static gg.bayes.challenge.utils.Constants.ON_DATA;
 import static gg.bayes.challenge.utils.Constants.OPEN_BRACKET;
 import static gg.bayes.challenge.utils.Constants.WITH;
 
@@ -96,9 +98,6 @@ public class MatchServiceImpl implements MatchService {
 
     /**
      * Method to process payload
-     *
-     * @param payload
-     * @return
      */
     @Override
     public Long ingestMatch(String payload) {
@@ -117,18 +116,11 @@ public class MatchServiceImpl implements MatchService {
     @Override
     public List<HeroKills> heroKills(Long matchId) { //TODO
         List<HeroKills> list = killerRepository.findHeroCount(matchId);
-        list.stream().forEach(p -> {
-            System.out.println(p);
-        });
         return list;
     }
 
     /**
      * Method to get list of items purchased by hero
-     *
-     * @param matchId
-     * @param heroName
-     * @return
      */
     @Override
     public List<HeroItems> heroItems(Long matchId, String heroName) {
@@ -146,10 +138,6 @@ public class MatchServiceImpl implements MatchService {
 
     /**
      * Method to get spells
-     *
-     * @param matchId
-     * @param heroName
-     * @return
      */
     @Override
     public List<HeroSpells> heroSpells(Long matchId, String heroName) {
@@ -167,10 +155,6 @@ public class MatchServiceImpl implements MatchService {
 
     /**
      * Method to get damages
-     *
-     * @param matchId
-     * @param heroName
-     * @return
      */
     @Override
     public List<HeroDamage> heroDamage(Long matchId, String heroName) {
@@ -189,10 +173,6 @@ public class MatchServiceImpl implements MatchService {
 
     /**
      * Method to process payload
-     *
-     * @param payload
-     * @return
-     * @throws IOException
      */
     private Long processPayload(String payload) throws IOException {
         List<String> lines = Arrays.asList(payload.split("\\["));
@@ -218,7 +198,7 @@ public class MatchServiceImpl implements MatchService {
                 buildHits(stringToSearch, match, hits);
                 hitsRepository.saveAll(hits);
             } else {
-                log.warn("Ignored lines:  ");
+                log.warn("Ignored lines:  " + stringToSearch);
             }
         });
         return match.getId();
@@ -235,33 +215,28 @@ public class MatchServiceImpl implements MatchService {
 
     /**
      * Method to build kills
-     *
-     * @param stringToSearch
-     * @param match
-     * @param entity
      */
     private void buildKills(String stringToSearch, Match match, List<Kills> entity) {
 
-        String killedPerson = StringUtils.contains(StringUtils.substringBetween(stringToSearch, NPC_DOTA, IS).trim(), "hero")
+        String killedPerson = StringUtils.contains(StringUtils.substringBetween(stringToSearch, NPC_DOTA, IS).trim(), HERO)
                 ? StringUtils.substringBetween(stringToSearch, NPC_DOTA_HERO, IS).trim() :
                 StringUtils.substringBetween(stringToSearch, NPC_DOTA, IS).trim();
+        String hero = StringUtils.isNotEmpty(StringUtils.substringAfterLast(stringToSearch, BY_NPC_DOTA_HERO).trim()) ?
+                StringUtils.substringAfterLast(stringToSearch, BY_NPC_DOTA_HERO).trim()
+                : StringUtils.substringAfterLast(stringToSearch, BY_NPC_DOTA).trim();
         entity.add(Kills.builder()
                 .timeOfEvent(buildTimeStamp(StringUtils.substringBefore(stringToSearch, CLOSE_SQ_BRACKET).trim()))
-                .hero(StringUtils.substringAfterLast(stringToSearch, BY_NPC_DOTA_HERO).trim())
+                .hero(hero)
                 .match(match)
                 .killed(killedPerson).build());
     }
 
     /**
      * Method to build hits entity
-     *
-     * @param stringToSearch
-     * @param match
-     * @param hits
      */
     private void buildHits(String stringToSearch, Match match, List<Hits> hits) {
         String totalDamages = null;
-        System.out.println("String value :" + stringToSearch);
+
         if (stringToSearch != null && StringUtils.isNotEmpty(StringUtils.substringAfterLast(stringToSearch, ARROW).trim())) {
             totalDamages = StringUtils.substringBetween(stringToSearch, OPEN_BRACKET, ARROW).trim();
         }
@@ -278,9 +253,6 @@ public class MatchServiceImpl implements MatchService {
 
     /**
      * Method to build timestamp
-     *
-     * @param timeOfEvent
-     * @return
      */
     private long buildTimeStamp(String timeOfEvent) {
         LocalDateTime timeStamp = LocalDateTime.now();
@@ -296,10 +268,6 @@ public class MatchServiceImpl implements MatchService {
 
     /**
      * Method to build items
-     *
-     * @param stringToSearch
-     * @param match
-     * @param items
      */
     private void buildItems(String stringToSearch, Match match, List<Items> items) {
         items.add(Items.builder()
@@ -311,19 +279,20 @@ public class MatchServiceImpl implements MatchService {
 
     /**
      * Method to build casts
-     *
-     * @param stringToSearch
-     * @param match
-     * @param casts
      */
     private void buildCasts(String stringToSearch, Match match, List<Casts> casts) {
+        String levelOn = StringUtils.substringAfterLast(stringToSearch,") on");
+        String[] levelAr = StringUtils.isNotEmpty(levelOn) ? levelOn.split("dota_")
+                : new String[]{};
+        String levelOnStr = StringUtils.isNotEmpty(levelOn) &&  levelAr.length > 0 ? levelAr[levelAr.length-1] : levelOn;
         casts.add(Casts.builder()
                 .match(match)
                 .timeOfEvent(buildTimeStamp(StringUtils.substringBefore(stringToSearch, CLOSE_SQ_BRACKET).trim()))
-                .name(StringUtils.substringBetween(stringToSearch, NPC_DOTA_HERO, CASTS).trim())
+                .name(StringUtils.isNotEmpty(StringUtils.substringBetween(stringToSearch, NPC_DOTA_HERO, CASTS).trim())
+                        ? StringUtils.substringBetween(stringToSearch, NPC_DOTA_HERO, CASTS).trim()
+                        : StringUtils.substringBetween(stringToSearch, NPC_DOTA, CASTS).trim())
                 .casts(StringUtils.substringBetween(stringToSearch, ABILITY, OPEN_BRACKET).trim())
                 .level(StringUtils.substringBetween(stringToSearch, LEVEL, CLOSE_BRACKET).trim())
-                .levelOn(StringUtils.substringAfterLast(stringToSearch, ON).trim())
-                .build());
+                .levelOn(levelOnStr).build());
     }
 }

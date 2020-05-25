@@ -4,6 +4,7 @@ public class Constants {
     public static String NPC_DOTA_HERO = "npc_dota_hero_";
     public static String NPC_DOTA = "npc_dota_";
     public static String BY_NPC_DOTA_HERO = "by "+NPC_DOTA_HERO;
+    public static String BY_NPC_DOTA = "by "+NPC_DOTA;
     public static String ITEM = "item_";
     public static String ON_NPC_DOTA_HERO = "on "+NPC_DOTA_HERO;
     public static String BUYS = "buys";
@@ -21,5 +22,7 @@ public class Constants {
     public static String HITS_NPC_DOTA_HERO = "hits "+NPC_DOTA_HERO;
     public static String ARROW = "->";
     public static String LEVEL = "lvl";
-    public static String ON = "ON";
+    public static String ON_NPC_DOTA = "on npc_dota_hero";
+    public static String ON_DATA = "on dota";
+    public static String HERO = "hero";
 }

@@ -6,7 +6,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     open-in-view: false
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: create
     properties:
@@ -37,9 +37,9 @@ spring:
 logging.config: classpath:logback-${ENV:development}.xml
 
 #Pattern Strings
-pattern.killed.2: (.*)\](.*)npc_(.*)is(.*)killed(.*)by(.*)npc_dota_(.*)
+pattern.killed.2: (.*)\](.*)npc_(.*)is(.*)killed(.*)by(.*)npc_dota_(.*)|(.*)\](.*)npc_(.*)is(.*)killed(.*)by(.*)npc_(.*)
 pattern.killed.1: (.*)\](.*)npc_(.*)is(.*)killed(.*)by(.*)_(.*)
 pattern.item: (.*)\](.*)npc_dota_hero_(.*)buys(.*)item(.*)item_(.*)
-pattern.casts: (.*)\](.*)npc_dota_hero_(.*)casts(.*)ability(.*)abyssal_underlord_(.*)lvl(.*)on(.*)dota_(.*)
+pattern.casts: (.*)\](.*)npc_dota_hero_(.*)casts(.*)ability(.*)lvl(.*)on(.*)_(.*)|(.*)\](.*)npc_dota_(.*)casts(.*)ability(.*)abyssal_underlord_(.*)lvl(.*)on(.*)_(.*)
 pattern.hit.1: (.*)\](.*)npc_dota_hero_(.*)hits(.*)npc_dota_hero_(.*)with(.*)_(.*)for(.*)damage(.*)->(.*)
 pattern.hit.2: (.*)\](.*)npc_dota_hero_(.*)hits(.*)npc_dota_hero_(.*)with(.*)_(.*)for(.*)damage(.*)
