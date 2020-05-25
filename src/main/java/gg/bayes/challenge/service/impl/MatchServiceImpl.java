@@ -3,6 +3,7 @@ package gg.bayes.challenge.service.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -115,12 +116,11 @@ public class MatchServiceImpl implements MatchService {
      */
     @Override
     public List<HeroKills> heroKills(Long matchId) { //TODO
-       /* List<Object[]> result = killerRepository.results();
-        result.stream().forEach(p -> System.out.println(p.length+" -"+p[0]));
-        return result.stream().map(p -> HeroKills.builder().hero(p[0].toString())
-                .kills(Integer.parseInt(p[1].toString())).build()).collect(Collectors.toList());
-    */
-        return null;
+        List<HeroKills> list = killerRepository.findHeroCount(matchId);
+        list.stream().forEach(p -> {
+            System.out.println(p);
+        });
+        return list;
     }
 
     /**
