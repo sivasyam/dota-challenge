@@ -198,7 +198,7 @@ public class MatchServiceImpl implements MatchService {
                 buildHits(stringToSearch, match, hits);
                 hitsRepository.saveAll(hits);
             } else {
-                log.warn("Ignored lines:  " + stringToSearch);
+                log.warn("Ignored lines:  ");
             }
         });
         return match.getId();
